@@ -4,6 +4,8 @@ import { getDatabase } from "firebase/database";
 
 
 
+
+
 const config = {
     apiKey: "AIzaSyAVFq_XwlzxehN6l8BhbXXmmvd_XV0BZvI",
     authDomain: "chat-app-vuejs-cfc0b.firebaseapp.com",
@@ -17,4 +19,4 @@ const config = {
 const app = initializeApp(config);
 
 const db = getDatabase(app);
-export default db;
+export {db} ;

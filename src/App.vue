@@ -16,8 +16,17 @@
       <h1>Bienvenue, {{ state.username }}</h1>
     </header>
     <section class="chat-box">
-      //message
+      <div 
+        v-for="message in state.messages" 
+        :key="message.key" 
+        :class="(message.username == state.username ? 'message current-user' : 'message')">
+        <div class="message-inner">
+          <div class="username">{{ message.username }}</div>
+          <div class="content">{{ message.content }}</div>
+        </div>
+      </div>
     </section>
+
     <footer>
       <form @submit.prevent="SendMessage">
         <input type="text" v-model="inputMessage" placeholder="Ecrire un message..." />
@@ -29,7 +38,8 @@
 
 <script>
 import { reactive, onMounted, ref } from 'vue';
-import db from './db';
+import { ref as sRef, set, push, get, update } from "firebase/database";
+import {db} from './db.js';
 
 export default {
   setup() {
@@ -48,7 +58,7 @@ export default {
       }
     }
     const SendMessage = () => {
-      const messagesRef = db.database().ref("messages");
+      //const messagesRef = db.database().sRef("messages");
 
       if (inputMessage.value === "" || inputMessage.value === null) {
         return;
@@ -57,10 +67,32 @@ export default {
         username: state.username,
         content: inputMessage.value
       }
-
-      messagesRef.push(message);
+      set(push(sRef(db, 'messages')), message);
+      //messagesRef.push(message);
       inputMessage.value = "";
     }
+
+    onMounted(() => {
+      const messagesRef = db.ref('messages').limitToLast(30);
+
+      
+      messagesRef.on('value', snapshot => {
+        const data = snapshot.val();
+        let messages = [];
+
+        Object.key(data).forEach(key =>{
+          messages.push({
+            id: key,
+            username: data[key].username,
+            content: data[key].content,
+         });
+        });
+
+        state.messages = messages;
+      });
+
+    });
+
     return {
       inputUsername,
       Login,
