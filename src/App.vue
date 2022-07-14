@@ -3,31 +3,31 @@
     <form class="login-form" @submit.prevent="Login">
       <div class="form-inner">
         <h1>Se Connecter au Chat</h1>
-        <label for="username">Pseudo</label>
-        <input type="text" v-model="inputUsername" placeholder="Veuillez entrée votre pseudo" />
+        <label for="username">Nom d'Utilisateur</label>
+        <input type="text" v-model="inputUsername" placeholder="Veuillez entrée votre Nom d'Utilisateur" />
         <input type="submit" value="connexion" />
       </div>
     </form>
   </div>
-
   <div class="view chat" v-else>
     <header>
-      <button class="logout">Déconnexion</button>
+      <button class="logout" @click="Logout">Déconnexion</button>
       <h1>Bienvenue, {{ state.username }}</h1>
     </header>
-    <section class="chat-box">
-      <div 
-        v-for="message in state.messages" 
-        :key="message.key" 
-        :class="(message.username == state.username ? 'message current-user' : 'message')">
-        <div class="message-inner">
-          <div class="username">{{ message.username }}</div>
-          <div class="content">{{ message.content }}</div>
+    <div class="chat">
+      <section ref="chat" id="chat" class="chat-box">
+        <div v-for="message in state.messages" :key="message.key"
+          :class="(message.username == state.username ? 'message current-user' : 'message')">
+          <div class="message-inner">
+            <div class="username">{{ message.username }}</div>
+            <div class="content">{{ message.content }}</div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <footer>
+      <div class="bottom"></div>
       <form @submit.prevent="SendMessage">
         <input type="text" v-model="inputMessage" placeholder="Ecrire un message..." />
         <input type="submit" value="Envoyé" />
@@ -38,70 +38,72 @@
 
 <script>
 import { reactive, onMounted, ref } from 'vue';
-import { ref as sRef, set, push, get, update } from "firebase/database";
-import {db} from './db.js';
+import { ref as sRef, set, push, onValue } from "firebase/database";
+import { db } from './db.js';
 
 export default {
   setup() {
     const inputUsername = ref("");
     const inputMessage = ref("");
-
     const state = reactive({
       username: "",
       messages: [],
-    })
-
+      scrolled: false,
+    });
     const Login = () => {
       if (inputUsername.value != "" || inputUsername.value != null) {
         state.username = inputUsername.value;
         inputUsername.value = "";
       }
-    }
+    };
+    const Logout = () => {
+      state.username = "";
+    };
     const SendMessage = () => {
-      //const messagesRef = db.database().sRef("messages");
-
       if (inputMessage.value === "" || inputMessage.value === null) {
         return;
       }
       const message = {
         username: state.username,
-        content: inputMessage.value
-      }
-      set(push(sRef(db, 'messages')), message);
-      //messagesRef.push(message);
+        content: inputMessage.value,
+      };
+      set(push(sRef(db, "messages")), message);
       inputMessage.value = "";
-    }
-
+    };
+    const updateScrolled = () => {
+      if (!state.scrolled) {
+        var chat = this.$refs.chat;
+        chat.scrollTop = chat.scrollHeight;
+      }
+      this.$refs.chat.$chat.scroll()
+    };
     onMounted(() => {
-      const messagesRef = db.ref('messages').limitToLast(30);
-
-      
-      messagesRef.on('value', snapshot => {
+      const messagesRef = sRef(db, "messages");
+      onValue(messagesRef, (snapshot) => {
         const data = snapshot.val();
         let messages = [];
-
-        Object.key(data).forEach(key =>{
+        Object.keys(data).forEach(key => {
           messages.push({
             id: key,
             username: data[key].username,
-            content: data[key].content,
-         });
+            content: data[key].content
+          });
         });
-
         state.messages = messages;
       });
-
     });
-
     return {
       inputUsername,
       Login,
       state,
       inputMessage,
       SendMessage,
-    }
-  }
+      Logout,
+      updateScrolled,
+    };
+  },
 }
+
 </script>
 
 <style lang="scss">
@@ -118,7 +120,7 @@ export default {
   display: flex;
   justify-content: center;
   min-height: 100vh;
-  background-color: #ea526f;
+  background-color: #1b4f72;
 
   &.login {
     align-items: center;
@@ -180,7 +182,7 @@ export default {
           display: block;
           width: 100%;
           padding: 10px 15px;
-          background-color: #ea526f;
+          background-color: #5dade2;
           border-radius: 8px;
           color: #FFF;
           font-size: 18px;
@@ -189,7 +191,7 @@ export default {
 
         &:focus-within {
           label {
-            color: #ea526f;
+            color: #5dade2;
           }
 
           input[type="text"] {
@@ -227,6 +229,12 @@ export default {
         font-size: 18px;
         margin-bottom: 10px;
         text-align: right;
+        transition: 00.4s;
+      }
+
+      .logout:hover {
+        font-size: 20px;
+        cursor: pointer;
       }
 
       h1 {
@@ -236,7 +244,7 @@ export default {
 
     .chat-box {
       border-radius: 24px 24px 0px 0px;
-      background-color: #FFF;
+      background-color: #d6eaf8;
       box-shadow: 0px 0px 12px rgba(100, 100, 100, 0.2);
       flex: 1 1 100%;
       padding: 30px;
@@ -247,7 +255,7 @@ export default {
 
         .message-inner {
           .username {
-            color: #888;
+            color: black;
             font-size: 16px;
             margin-bottom: 5px;
             padding-left: 15px;
@@ -258,11 +266,16 @@ export default {
             display: inline-block;
             padding: 10px 20px;
             background-color: #F3F3F3;
-            border-radius: 999px;
+            border-radius: 995px;
             color: #333;
-            font-size: 18px;
+            font-size: 15px;
             line-height: 1.2em;
             text-align: left;
+            transition: 00.4s;
+          }
+
+          .content:hover {
+            font-size: 19px;
           }
         }
 
@@ -277,7 +290,7 @@ export default {
             .content {
               color: #FFF;
               font-weight: 600;
-              background-color: #ea526f;
+              background-color: #3faae7;
             }
           }
         }
@@ -325,11 +338,13 @@ export default {
           display: block;
           padding: 10px 15px;
           border-radius: 0px 8px 8px 0px;
-          background-color: #ea526f;
+          background-color: #5dade2;
           color: #FFF;
           font-size: 18px;
           font-weight: 700;
+          cursor: pointer;
         }
+
       }
     }
   }

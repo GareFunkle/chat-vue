@@ -1,0 +1,14 @@
+var updateScroll
+function updateScroll(){
+    if(!scrolled){
+        var element = document.getElementById("yourDivID");
+        element.scrollTop = element.scrollHeight;
+    }
+}
+
+$("#yourDivID").on('scroll', function(){
+    scrolled=true;
+});
+
+      //const chatLogDiv = this.$refs.scroll;
+      //chatLogDiv.scrollTop = chatLogDiv.scrollHeight
