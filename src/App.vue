@@ -261,7 +261,6 @@ export default {
       }
 
       .logout:hover {
-        font-size: 20px;
         cursor: pointer;
       }
 
@@ -302,9 +301,6 @@ export default {
             transition: 00.4s;
           }
 
-          .content:hover {
-            font-size: 19px;
-          }
         }
 
         &.current-user {
@@ -323,10 +319,6 @@ export default {
           }
         }
       }
-    }
-
-    .bottom {
-      margin-top: -20px;
     }
 
     footer {
