@@ -3,11 +3,12 @@
     <form class="login-form" @submit.prevent="Login">
       <div class="form-inner">
         <h1>Se Connecter au Chat</h1>
-        <label for="username">Nom d'Utilisateur</label>
-        <input type="text" v-model="inputUsername" placeholder="Veuillez entrée votre Nom d'Utilisateur" />
-        <input type="submit" value="connexion" />
+        <label for="username">Nom d'Utilisateur : </label>
+        <input type="text" v-model="inputUsername" placeholder="exemple: john do ...etc" />
+        <input type="submit" value="connexion" @click="notifiktion()" />
       </div>
     </form>
+
   </div>
 
   <div class="view chat" v-else>
@@ -39,11 +40,14 @@
     <div ref="bottom" />
   </div>
 
+
+
 </template>
 
 <script>
 import { reactive, onMounted, ref, watch, nextTick } from 'vue';
 import { ref as sRef, set, push, onValue } from "firebase/database";
+import { useToast } from "vue-toastification";
 import { db } from './db.js';
 
 export default {
@@ -51,6 +55,9 @@ export default {
     const inputUsername = ref("");
     const inputMessage = ref("");
     const bottom = ref(null)
+    const toast = useToast()
+
+
 
     const state = reactive({
       username: "",
@@ -128,8 +135,22 @@ export default {
       SendMessage,
       Logout,
       bottom,
+      toast,
     };
   },
+  methods: {
+    notifiktion() {
+      if (this.state.username != null) {
+
+        this.toast.warning("Veuillez entrer un nom d'utilisateur. ");
+      } else {
+        this.toast.success("Connexion reussi !");
+      }
+    }
+
+  },
+
+
 }
 
 </script>
@@ -143,6 +164,10 @@ export default {
   padding: 0;
   box-sizing: border-box;
 }
+
+
+
+
 
 .view {
   display: flex;
