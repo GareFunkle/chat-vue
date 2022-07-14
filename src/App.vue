@@ -9,13 +9,16 @@
       </div>
     </form>
   </div>
+
   <div class="view chat" v-else>
     <header>
       <button class="logout" @click="Logout">Déconnexion</button>
       <h1>Bienvenue, {{ state.username }}</h1>
     </header>
+
     <div class="chat">
-      <section ref="chat" id="chat" class="chat-box">
+      <div class="chat-box">
+
         <div v-for="message in state.messages" :key="message.key"
           :class="(message.username == state.username ? 'message current-user' : 'message')">
           <div class="message-inner">
@@ -23,21 +26,23 @@
             <div class="content">{{ message.content }}</div>
           </div>
         </div>
-      </section>
+      </div>
+
     </div>
 
     <footer>
-      <div class="bottom"></div>
       <form @submit.prevent="SendMessage">
         <input type="text" v-model="inputMessage" placeholder="Ecrire un message..." />
         <input type="submit" value="Envoyé" />
       </form>
     </footer>
+    <div ref="bottom" />
   </div>
+
 </template>
 
 <script>
-import { reactive, onMounted, ref } from 'vue';
+import { reactive, onMounted, ref, watch, nextTick } from 'vue';
 import { ref as sRef, set, push, onValue } from "firebase/database";
 import { db } from './db.js';
 
@@ -45,11 +50,33 @@ export default {
   setup() {
     const inputUsername = ref("");
     const inputMessage = ref("");
+    const bottom = ref(null)
+
     const state = reactive({
       username: "",
       messages: [],
-      scrolled: false,
-    });
+      // scrolled: false,
+    })
+
+    watch(
+      inputUsername,
+      () => {
+        nextTick(() => {
+          bottom.value?.scrollIntoView({ behavior: 'smooth' })
+        })
+      },
+      { deep: true }
+    )
+    watch(
+      inputMessage,
+      () => {
+        nextTick(() => {
+          bottom.value?.scrollIntoView({ behavior: 'smooth' })
+        })
+      },
+      { deep: true }
+    )
+
     const Login = () => {
       if (inputUsername.value != "" || inputUsername.value != null) {
         state.username = inputUsername.value;
@@ -70,13 +97,14 @@ export default {
       set(push(sRef(db, "messages")), message);
       inputMessage.value = "";
     };
-    const updateScrolled = () => {
-      if (!state.scrolled) {
-        var chat = this.$refs.chat;
-        chat.scrollTop = chat.scrollHeight;
-      }
-      this.$refs.chat.$chat.scroll()
-    };
+
+    // const updateScrolled = () => {
+    //   if (!state.scrolled) {
+    //     var chat = this.$refs.chat;
+    //     chat.scrollTop = chat.scrollHeight;
+    //   }
+    //   this.$refs.chat.$chat.scroll()
+    // };
     onMounted(() => {
       const messagesRef = sRef(db, "messages");
       onValue(messagesRef, (snapshot) => {
@@ -90,8 +118,8 @@ export default {
           });
         });
         state.messages = messages;
-      });
-    });
+      })
+    })
     return {
       inputUsername,
       Login,
@@ -99,7 +127,7 @@ export default {
       inputMessage,
       SendMessage,
       Logout,
-      updateScrolled,
+      bottom,
     };
   },
 }
@@ -295,6 +323,10 @@ export default {
           }
         }
       }
+    }
+
+    .bottom {
+      margin-top: -20px;
     }
 
     footer {
