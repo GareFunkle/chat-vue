@@ -1,11 +1,12 @@
 <template>
+  <div class="d-flex flex-column justify-content-center w-100 h-100"></div>
   <div class="view login" v-if="state.username === '' || state.username === null">
     <form class="login-form" @submit.prevent="Login">
       <div class="form-inner">
         <h1>Se Connecter au Chat</h1>
         <label for="username">Nom d'Utilisateur : </label>
         <input type="text" v-model="inputUsername" placeholder="exemple: john do ...etc" />
-        <input type="submit" value="connexion" @click="notifiktion()" />
+        <input type="submit" value="connexion" />
       </div>
     </form>
 
@@ -51,6 +52,7 @@ import { useToast } from "vue-toastification";
 import { db } from './db.js';
 
 export default {
+
   setup() {
     const inputUsername = ref("");
     const inputMessage = ref("");
@@ -85,13 +87,18 @@ export default {
     )
 
     const Login = () => {
-      if (inputUsername.value != "" || inputUsername.value != null) {
+      if (inputUsername.value != "") {
         state.username = inputUsername.value;
         inputUsername.value = "";
+        toast.success(" Bienvenue " + state.username)
+      } else {
+        toast.warning(" Veuillez entrer un nom d'utilisateur ! ")
       }
     };
     const Logout = () => {
       state.username = "";
+      toast.warning(" Vous êtes deconnecter ! ");
+
     };
     const SendMessage = () => {
       if (inputMessage.value === "" || inputMessage.value === null) {
@@ -112,6 +119,7 @@ export default {
     //   }
     //   this.$refs.chat.$chat.scroll()
     // };
+
     onMounted(() => {
       const messagesRef = sRef(db, "messages");
       onValue(messagesRef, (snapshot) => {
@@ -121,12 +129,13 @@ export default {
           messages.push({
             id: key,
             username: data[key].username,
-            content: data[key].content
-          });
-        });
+            content: data[key].content,
+          })
+        })
         state.messages = messages;
       })
     })
+
     return {
       inputUsername,
       Login,
@@ -138,19 +147,14 @@ export default {
       toast,
     };
   },
+
   methods: {
-    notifiktion() {
-      if (this.state.username != null) {
-
-        this.toast.warning("Veuillez entrer un nom d'utilisateur. ");
-      } else {
-        this.toast.success("Connexion reussi !");
+    notifiktionLogin() {
+      if (this.inputMessage.value != "") {
+        this.toast.success(" a envoyer un message !");
       }
-    }
-
+    },
   },
-
-
 }
 
 </script>
@@ -165,7 +169,26 @@ export default {
   box-sizing: border-box;
 }
 
+body {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+  height: 100vh;
+}
 
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
 
 
 
@@ -173,7 +196,7 @@ export default {
   display: flex;
   justify-content: center;
   min-height: 100vh;
-  background-color: #1b4f72;
+  //background-color: #1b4f72;
 
   &.login {
     align-items: center;
