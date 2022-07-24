@@ -1,4 +1,5 @@
 <template>
+
   <div class="d-flex flex-column justify-content-center w-100 h-100"></div>
   <div class="view login" v-if="state.username === '' || state.username === null">
     <form class="login-form" @submit.prevent="Login">
@@ -19,7 +20,7 @@
     </header>
 
     <div class="chat">
-      <div class="chat-box">
+      <div ref="scrollchat" class="chat-box">
 
         <div v-for="message in state.messages" :key="message.key"
           :class="(message.username == state.username ? 'message current-user' : 'message')">
@@ -53,6 +54,7 @@ import { db } from './db.js';
 
 export default {
 
+
   setup() {
     const inputUsername = ref("");
     const inputMessage = ref("");
@@ -64,7 +66,7 @@ export default {
     const state = reactive({
       username: "",
       messages: [],
-      // scrolled: false,
+      //scrolled: false,
     })
 
     watch(
@@ -112,13 +114,14 @@ export default {
       inputMessage.value = "";
     };
 
-    // const updateScrolled = () => {
-    //   if (!state.scrolled) {
-    //     var chat = this.$refs.chat;
-    //     chat.scrollTop = chat.scrollHeight;
-    //   }
-    //   this.$refs.chat.$chat.scroll()
-    // };
+    //const updateScrolled = () => {
+    //if (!state.scrolled) {
+    //var chat = ref("chat-box")
+    //chat.value.scrollTop = chat.value.scrollHeight;
+    //}
+    //chat.value.scroll();
+    //state.scrolled = true;
+    //};
 
     onMounted(() => {
       const messagesRef = sRef(db, "messages");
@@ -148,13 +151,8 @@ export default {
     };
   },
 
-  methods: {
-    notifiktionLogin() {
-      if (this.inputMessage.value != "") {
-        this.toast.success(" a envoyer un message !");
-      }
-    },
-  },
+
+
 }
 
 </script>
